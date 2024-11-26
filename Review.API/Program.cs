@@ -1,6 +1,6 @@
-using MTOGO.API.Kafka;
-using MTOGO.API.Services;
-using MTOGO.Infrastructure.Kafka;
+using Review.API.Kafka;
+using Review.API.Services;
+using Review.Infrastructure.Kafka;
 
 var builder = WebApplication.CreateBuilder(args);
 

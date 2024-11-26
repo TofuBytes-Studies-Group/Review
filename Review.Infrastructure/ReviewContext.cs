@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MTOGO.Infrastructure
+namespace Review.Infrastructure
 {
     //To add DBContext:
-    internal class MTOGOContext
+    internal class ReviewContext
     {
     }
 }

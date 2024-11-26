@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using MTOGO.API.Services;
+using Review.API.Services;
 
-namespace MTOGO.API.Controllers
+namespace Review.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]

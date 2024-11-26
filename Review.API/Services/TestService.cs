@@ -1,7 +1,7 @@
 ﻿
-using MTOGO.Infrastructure.Kafka;
+using Review.Infrastructure.Kafka;
 
-namespace MTOGO.API.Services
+namespace Review.API.Services
 {
     public class TestService  
     {

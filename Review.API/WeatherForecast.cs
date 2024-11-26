@@ -1,4 +1,4 @@
-namespace MTOGO.API
+namespace Review.API
 {
     public class WeatherForecast
     {

@@ -1,4 +1,4 @@
-﻿namespace MTOGO.Domain
+﻿namespace Review.Domain
 {
     public class Class1
     {
