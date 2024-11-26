@@ -1,6 +1,7 @@
 using Reviews.API.Kafka;
 using Reviews.API.Services;
 using Reviews.Infrastructure.Kafka;
+using Reviews.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,11 @@ builder.Services.AddSingleton<KafkaProducer>();
 // Add the kafka consumer service as a hosted service (background service that runs for the lifetime of the application):
 builder.Services.AddHostedService<KafkaConsumer>();
 builder.Services.AddSingleton<TestService>();
+
+// Add mongoDB
+builder.Services.Configure<MongoDBConnection>(
+    builder.Configuration.GetSection("MongoDbConnection"));
+builder.Services.AddSingleton<IReviewRepository, MongoDBRepository>();
 
 var app = builder.Build();
 
