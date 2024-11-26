@@ -1,4 +1,4 @@
-namespace Review.API
+namespace Reviews.API
 {
     public class WeatherForecast
     {

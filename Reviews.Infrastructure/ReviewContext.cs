@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Review.Infrastructure
+namespace Reviews.Infrastructure
 {
     //To add DBContext:
-    internal class ReviewContext
+    internal class ReviewsContext
     {
     }
 }

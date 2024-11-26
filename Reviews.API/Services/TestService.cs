@@ -1,7 +1,7 @@
 ﻿
-using Review.Infrastructure.Kafka;
+using Reviews.Infrastructure.Kafka;
 
-namespace Review.API.Services
+namespace Reviews.API.Services
 {
     public class TestService  
     {

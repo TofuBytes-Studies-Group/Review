@@ -1,6 +1,6 @@
-using Review.API.Kafka;
-using Review.API.Services;
-using Review.Infrastructure.Kafka;
+using Reviews.API.Kafka;
+using Reviews.API.Services;
+using Reviews.Infrastructure.Kafka;
 
 var builder = WebApplication.CreateBuilder(args);
 

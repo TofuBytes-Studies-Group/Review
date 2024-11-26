@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Review.Infrastructure.Kafka
+namespace Reviews.Infrastructure.Kafka
 {
     public class KafkaProducer : IDisposable
     {

@@ -1,4 +1,4 @@
-﻿namespace Review.Domain
+﻿namespace Reviews.Domain
 {
     public class Class1
     {

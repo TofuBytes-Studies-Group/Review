@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Review.API.Services;
+using Reviews.API.Services;
 
-namespace Review.API.Controllers
+namespace Reviews.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
