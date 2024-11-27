@@ -4,7 +4,7 @@ using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Reviews.Domain.Aggregates;
+using Reviews.Domain.Entities;
 
 namespace Reviews.Infrastructure.Repositories
 {

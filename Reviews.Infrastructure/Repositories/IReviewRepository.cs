@@ -1,4 +1,4 @@
-﻿using Reviews.Domain.Aggregates;
+﻿using Reviews.Domain.Entities;
 
 namespace Reviews.Infrastructure.Repositories
 {

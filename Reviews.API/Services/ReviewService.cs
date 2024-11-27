@@ -3,10 +3,10 @@ using Reviews.Infrastructure.Kafka;
 
 namespace Reviews.API.Services
 {
-    public class TestService  
+    public class ReviewService  
     {
         private readonly KafkaProducer _kafkaProducer;
-        public TestService(KafkaProducer kafkaProducer)
+        public ReviewService(KafkaProducer kafkaProducer)
         {
             _kafkaProducer = kafkaProducer;
         }

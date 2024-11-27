@@ -5,26 +5,26 @@ namespace Reviews.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    public class ReviewController : ControllerBase
     {
         private static readonly string[] Summaries = new[]
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
-        private readonly ILogger<WeatherForecastController> _logger;
-        private readonly TestService _testService;
+        private readonly ILogger<ReviewController> _logger;
+        private readonly ReviewService _reviewService;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, TestService testService)
+        public ReviewController(ILogger<ReviewController> logger, ReviewService testService)
         {
             _logger = logger;
-            _testService = testService;
+            _reviewService = testService;
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {
-            _testService.DoStuff();
+            _reviewService.DoStuff();
 
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
@@ -34,5 +34,6 @@ namespace Reviews.API.Controllers
             })
             .ToArray();
         }
+
     }
 }
