@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Reviews.Infrastructure.Kafka
 {
-    public class KafkaProducer : IDisposable
+    public class KafkaProducer : IKafkaProducer, IDisposable
     {
         private readonly IConfiguration _configuration;
         private readonly ILogger<KafkaProducer> _logger;

@@ -24,7 +24,7 @@ namespace Reviews.API.Controllers
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {
-            _reviewService.DoStuff();
+            _reviewService.DoStuff(null);
 
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
