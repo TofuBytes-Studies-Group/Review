@@ -15,11 +15,11 @@ namespace Reviews.UnitTests
         {
             // Arrange 
             var expectedOrderId = Guid.NewGuid();
-            var expectedCustomerName = string.Empty;
+            var expectedCustomerName = "Test User";
             var expectedStarRating = starRating;
-            var expectedComment = string.Empty;
+            var expectedComment = "Great service!";
             var expectedRestaurantId = Guid.NewGuid();
-            var expectedRestaurantName = string.Empty;
+            var expectedRestaurantName = "Test Restaurant";
 
             // Act
             var result = new RestaurantReview(
@@ -47,11 +47,11 @@ namespace Reviews.UnitTests
         {
             // Arrange 
             var expectedOrderId = Guid.NewGuid();
-            var expectedCustomerName = string.Empty;
+            var expectedCustomerName = "Test User";
             var expectedStarRating = starRating;
-            var expectedComment = string.Empty;
+            var expectedComment = "Great service!";
             var expectedRestaurantId = Guid.NewGuid();
-            var expectedRestaurantName = string.Empty;
+            var expectedRestaurantName = "Test Restaurant";
              
             // Act & Assert
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
@@ -72,11 +72,11 @@ namespace Reviews.UnitTests
         { 
             // Arrange 
             var expectedOrderId = Guid.NewGuid();
-            var expectedCustomerName = string.Empty;
+            var expectedCustomerName = "Test User";
             var expectedStarRating = 1;
             var expectedComment = new string('a', commentLength);
             var expectedRestaurantId = Guid.NewGuid();
-            var expectedRestaurantName = string.Empty;
+            var expectedRestaurantName = "Test Restaurant";
 
             // Act
             var result = new RestaurantReview(
@@ -103,11 +103,11 @@ namespace Reviews.UnitTests
         {
             // Arrange 
             var expectedOrderId = Guid.NewGuid();
-            var expectedCustomerName = string.Empty;
+            var expectedCustomerName = "Test User";
             var expectedStarRating = 1;
             var expectedComment = new string('a', commentLength);
             var expectedRestaurantId = Guid.NewGuid();
-            var expectedRestaurantName = string.Empty;
+            var expectedRestaurantName = "Test Restaurant";
 
             // Act & Assert
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
@@ -123,10 +123,10 @@ namespace Reviews.UnitTests
         {
             // Arrange 
             var expectedOrderId = Guid.NewGuid();
-            var expectedCustomerName = string.Empty;
+            var expectedCustomerName = "Test User";
             var expectedStarRating = 1;
-            var expectedRestaurantId = Guid.NewGuid();
-            var expectedRestaurantName = string.Empty;
+            var expectedRestaurantId = Guid.NewGuid();  
+            var expectedRestaurantName = "Test Restaurant";  
 
             // Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
@@ -134,7 +134,104 @@ namespace Reviews.UnitTests
                     expectedOrderId, expectedCustomerName, expectedStarRating,
                     null, expectedRestaurantId, expectedRestaurantName
                 ));
-            Assert.Equal("Must add a review comment", exception.ParamName);
+            Assert.Equal("Comment is required.", exception.ParamName);
+        }
+
+        [Fact]
+        public void RestarauntReview_New_InvalidCommentLength_Empty_ShouldThrowArgumentNullException()
+        {
+            // Arrange 
+            var expectedOrderId = Guid.NewGuid();
+            var expectedCustomerName = "Test User";
+            var expectedStarRating = 1;
+            var expectedRestaurantId = Guid.NewGuid();
+            var expectedRestaurantName = "Test Restaurant";
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new RestaurantReview(
+                    expectedOrderId, expectedCustomerName, expectedStarRating,
+                    string.Empty, expectedRestaurantId, expectedRestaurantName
+                ));
+            Assert.Equal("Comment is required.", exception.ParamName);
+        }
+
+        [Fact]
+        public void RestarauntReview_New_InvalidCustomerName_Empty_ShouldThrowArgumentNullException()
+        {
+            // Arrange 
+            var expectedOrderId = Guid.NewGuid();
+            var expectedStarRating = 1;
+            var expectedComment = "Great service!";
+            var expectedRestaurantId = Guid.NewGuid();
+            var expectedRestaurantName = "Test Restaurant";
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new RestaurantReview(
+                    expectedOrderId, string.Empty, expectedStarRating,
+                    expectedComment, expectedRestaurantId, expectedRestaurantName
+                ));
+            Assert.Equal("CustomerUsername is required.", exception.ParamName);
+        }
+
+        [Fact]
+        public void RestarauntReview_New_InvalidRestaurantId_Empty_ShouldThrowArgumentNullException()
+        {
+            // Arrange 
+            var expectedOrderId = Guid.NewGuid();
+            var expectedCustomerName = "Test User";
+            var expectedStarRating = 1;
+            var expectedComment = "Great service!";
+            var expectedRestaurantId = Guid.Empty;
+            var expectedRestaurantName = "Test Restaurant";
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new RestaurantReview(
+                    expectedOrderId, expectedCustomerName, expectedStarRating,
+                    expectedComment, expectedRestaurantId, expectedRestaurantName
+                ));
+            Assert.Equal("RestaurantId is required.", exception.ParamName);
+        }
+
+        [Fact]
+        public void RestarauntReview_New_InvalidOrderId_Empty_ShouldThrowArgumentNullException()
+        {
+            // Arrange 
+            var expectedOrderId = Guid.Empty;
+            var expectedCustomerName = "Test User";
+            var expectedStarRating = 1;
+            var expectedComment = "Great service!";
+            var expectedRestaurantId = Guid.NewGuid();
+            var expectedRestaurantName = "Test Restaurant";
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new RestaurantReview(
+                    expectedOrderId, expectedCustomerName, expectedStarRating,
+                    expectedComment, expectedRestaurantId, expectedRestaurantName
+                ));
+            Assert.Equal("OrderId is required.", exception.ParamName);
+        }
+
+        [Fact]
+        public void RestarauntReview_New_InvalidRestaurantName_Empty_ShouldThrowArgumentNullException()
+        {
+            // Arrange 
+            var expectedOrderId = Guid.NewGuid();
+            var expectedCustomerName = "Test User";
+            var expectedStarRating = 1;
+            var expectedComment = "Great service!";
+            var expectedRestaurantId = Guid.NewGuid();
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new RestaurantReview(
+                    expectedOrderId, expectedCustomerName, expectedStarRating,
+                    expectedComment, expectedRestaurantId, string.Empty
+                ));
+            Assert.Equal("RestaurantName is required.", exception.ParamName);
         }
 
         [Theory]
@@ -148,11 +245,11 @@ namespace Reviews.UnitTests
         {
             // Arrange 
             var expectedOrderId = Guid.NewGuid();
-            var expectedCustomerName = string.Empty;
+            var expectedCustomerName = "Test User";
             var expectedStarRating = starRating;
-            var expectedComment = string.Empty;
+            var expectedComment = "Great service!";
             var expectedAgentId = Guid.NewGuid();
-            var expectedAgentName = string.Empty;
+            var expectedAgentName = "Test Delivery Agent";
 
             // Act
             var result = new DeliveryAgentReview(
@@ -180,11 +277,11 @@ namespace Reviews.UnitTests
         {
             // Arrange 
             var expectedOrderId = Guid.NewGuid();
-            var expectedCustomerName = string.Empty;
+            var expectedCustomerName = "Test User";
             var expectedStarRating = starRating;
-            var expectedComment = string.Empty;
+            var expectedComment = "Great service!";
             var expectedAgentId = Guid.NewGuid();
-            var expectedAgentName = string.Empty;
+            var expectedAgentName = "Test Delivery Agent";
 
             // Act & Assert
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
@@ -205,11 +302,11 @@ namespace Reviews.UnitTests
         {
             // Arrange 
             var expectedOrderId = Guid.NewGuid();
-            var expectedCustomerName = string.Empty;
+            var expectedCustomerName = "Test User";
             var expectedStarRating = 1;
             var expectedComment = new string('a', commentLength); ;
             var expectedAgentId = Guid.NewGuid();
-            var expectedAgentName = string.Empty;
+            var expectedAgentName = "Test Delivery Agent";
 
             // Act
             var result = new DeliveryAgentReview(
@@ -236,11 +333,11 @@ namespace Reviews.UnitTests
         {
             // Arrange 
             var expectedOrderId = Guid.NewGuid();
-            var expectedCustomerName = string.Empty;
+            var expectedCustomerName = "Test User";
             var expectedStarRating = 1;
             var expectedComment = new string('a', commentLength); ;
             var expectedAgentId = Guid.NewGuid();
-            var expectedAgentName = string.Empty;
+            var expectedAgentName = "Test Delivery Agent";
 
             // Act & Assert
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
@@ -256,10 +353,10 @@ namespace Reviews.UnitTests
         {
             // Arrange 
             var expectedOrderId = Guid.NewGuid();
-            var expectedCustomerName = string.Empty;
+            var expectedCustomerName = "Test User";
             var expectedStarRating = 1;
             var expectedAgentId = Guid.NewGuid();
-            var expectedAgentName = string.Empty;
+            var expectedAgentName = "Test Delivery Agent";
 
             // Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
@@ -267,7 +364,105 @@ namespace Reviews.UnitTests
                     expectedOrderId, expectedCustomerName, expectedStarRating,
                     null, expectedAgentId, expectedAgentName
                 ));
-            Assert.Equal("Must add a review comment", exception.ParamName);
+            Assert.Equal("Comment is required.", exception.ParamName);
+        }
+
+
+        [Fact]
+        public void DeliveryAgentReview_New_InvalidCommentLength_Empty_ShouldThrowArgumentNullException()
+        {
+            // Arrange 
+            var expectedOrderId = Guid.NewGuid();
+            var expectedCustomerName = "Test User";
+            var expectedStarRating = 1;
+            var expectedAgentId = Guid.NewGuid();
+            var expectedAgentName = "Test Delivery Agent";
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new DeliveryAgentReview(
+                    expectedOrderId, expectedCustomerName, expectedStarRating,
+                    string.Empty, expectedAgentId, expectedAgentName
+                ));
+            Assert.Equal("Comment is required.", exception.ParamName);
+        }
+
+        [Fact]
+        public void DeliveryAgentReview_New_InvalidCustomerName_Empty_ShouldThrowArgumentNullException()
+        {
+            // Arrange 
+            var expectedOrderId = Guid.NewGuid();
+            var expectedStarRating = 1;
+            var expectedComment = "Great service!";
+            var expectedAgentId = Guid.NewGuid();
+            var expectedAgentName = "Test Delivery Agent";
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new DeliveryAgentReview(
+                    expectedOrderId, string.Empty, expectedStarRating,
+                    expectedComment, expectedAgentId, expectedAgentName
+                ));
+            Assert.Equal("CustomerUsername is required.", exception.ParamName);
+        }
+
+        [Fact]
+        public void DeliveryAgentReview_New_InvalidDeliveryAgentName_Empty_ShouldThrowArgumentNullException()
+        {
+            // Arrange 
+            var expectedOrderId = Guid.NewGuid();
+            var expectedCustomerName = "Test User";
+            var expectedStarRating = 1;
+            var expectedComment = "Great service!";
+            var expectedAgentId = Guid.NewGuid();
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new DeliveryAgentReview(
+                    expectedOrderId, expectedCustomerName, expectedStarRating,
+                    expectedComment, expectedAgentId, string.Empty
+                ));
+            Assert.Equal("DeliveryAgentName is required.", exception.ParamName);
+        }
+
+        [Fact]
+        public void DeliveryAgentReview_New_InvalidRestaurantId_Empty_ShouldThrowArgumentNullException()
+        {
+            // Arrange 
+            var expectedOrderId = Guid.NewGuid();
+            var expectedCustomerName = "Test User";
+            var expectedStarRating = 1;
+            var expectedComment = "Great service!";
+            var expectedAgentId = Guid.Empty;
+            var expectedAgentName = "Test Delivery Agent";
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new DeliveryAgentReview(
+                    expectedOrderId, expectedCustomerName, expectedStarRating,
+                    expectedComment, expectedAgentId, expectedAgentName
+                ));
+            Assert.Equal("DeliveryAgentId is required.", exception.ParamName);
+        }
+
+        [Fact]
+        public void DeliveryAgentReview_New_InvalidOrderId_Empty_ShouldThrowArgumentNullException()
+        {
+            // Arrange 
+            var expectedOrderId = Guid.Empty;
+            var expectedCustomerName = "Test User";
+            var expectedStarRating = 1;
+            var expectedComment = "Great service!";
+            var expectedAgentId = Guid.NewGuid();
+            var expectedAgentName = "Test Delivery Agent";
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new DeliveryAgentReview(
+                    expectedOrderId, expectedCustomerName, expectedStarRating,
+                    expectedComment, expectedAgentId, expectedAgentName
+                ));
+            Assert.Equal("OrderId is required.", exception.ParamName);
         }
     }
 }

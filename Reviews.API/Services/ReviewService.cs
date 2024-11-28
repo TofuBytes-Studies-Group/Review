@@ -10,7 +10,7 @@ using Reviews.Infrastructure.Repositories;
 
 namespace Reviews.API.Services
 {
-    public class ReviewService
+    public class ReviewService : IReviewService
     {
         private readonly Func<string, IReviewFactory> _factoryResolver;
         private readonly IKafkaProducer _kafkaProducer;
@@ -21,21 +21,6 @@ namespace Reviews.API.Services
             _kafkaProducer = kafkaProducer;
             _factoryResolver = factoryResolver;
             _reviewRepository = reviewRepository;
-        }
-
-        public async void DoStuff(string type)
-        {
-            try
-            {
-                var factory = _factoryResolver(type) ?? throw new InvalidReviewTypeException($"Invalid review type: {type}");
-                // Brug KafkaProducer
-                await _kafkaProducer.ProduceAsync("topic", "Virker", "From DOSTUFF");
-            }
-            catch (KeyNotFoundException)
-            {
-                throw new InvalidReviewTypeException($"Invalid review type: {type}");
-            }
-
         }
 
         public async Task<Review> CreateReviewAsync(ReviewRequest request)

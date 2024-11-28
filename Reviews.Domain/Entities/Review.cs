@@ -23,8 +23,6 @@
             get => _comment;
             set
             {
-                if (value == null)
-                    throw new ArgumentNullException("Must add a review comment");
                 if (value.Length > 280)
                     throw new ArgumentOutOfRangeException("Review cannot be more than 280 characters");
                 _comment = value;
@@ -33,6 +31,13 @@
 
         protected Review(Guid orderId, string customerUsername, int starRating, string comment)
         {
+            if (orderId == Guid.Empty)
+                throw new ArgumentNullException("OrderId is required.");
+            if (string.IsNullOrWhiteSpace(customerUsername))
+                throw new ArgumentNullException("CustomerUsername is required.");
+            if (string.IsNullOrWhiteSpace(comment))
+                throw new ArgumentNullException("Comment is required.");
+
             OrderId = orderId;
             CustomerUsername = customerUsername;
             StarRating = starRating;

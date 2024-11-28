@@ -161,7 +161,7 @@ namespace API.Test
             // Act & Assert
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(() =>
                 reviewService.CreateReviewAsync(request));
-            Assert.Equal("Must add a review comment", exception.ParamName);
+            Assert.Equal("Comment is required.", exception.ParamName);
         }
 
         [Fact]
