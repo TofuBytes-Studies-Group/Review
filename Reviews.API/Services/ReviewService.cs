@@ -1,5 +1,6 @@
 ﻿
 using DnsClient;
+using Reviews.API.DTOs;
 using Reviews.Domain.Entities;
 using Reviews.Domain.Entities.Factories;
 using Reviews.Domain.Exceptions;
@@ -26,24 +27,25 @@ namespace Reviews.API.Services
                 // Brug KafkaProducer
                 await _kafkaProducer.ProduceAsync("topic", "Virker", "From DOSTUFF");
             }
-            catch (Exception)
+            catch (KeyNotFoundException)
             {
                 throw new InvalidReviewTypeException($"Invalid review type: {type}");
             }
 
         }
 
-        public Review CreateReview(Guid orderId, string customerUsername, int rating,
-            string comment, Guid entityId, string entityName, string type)
+        public Review CreateReview(ReviewRequest request)
         {
             try
             {
-                var factory = _factoryResolver(type) ?? throw new InvalidReviewTypeException($"Invalid review type: {type}");
-                return factory.CreateReview(orderId, customerUsername, rating, comment, entityId, entityName);
+                var factory = _factoryResolver(request.ReviewType) 
+                    ?? throw new InvalidReviewTypeException($"Invalid review type: {request.ReviewType}");
+                return factory.CreateReview(request.OrderId, request.CustomerUsername, 
+                    request.StarRating, request.Comment, request.IdOfRevewied, request.NameOfReviewed);
             }
-            catch (Exception)
+            catch (KeyNotFoundException)
             {
-                throw new InvalidReviewTypeException($"Invalid review type: {type}");
+                throw new InvalidReviewTypeException($"Invalid review type: {request.ReviewType}");
             }
         }
     }

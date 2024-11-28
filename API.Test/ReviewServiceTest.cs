@@ -4,46 +4,159 @@ using Reviews.Domain.Entities;
 using Reviews.Infrastructure.Kafka;
 using Moq;
 using Reviews.Domain.Exceptions;
+using Reviews.API.DTOs;
 
 namespace API.Test
 {
     public class ReviewServiceTest
     {
         [Fact]
-        public void CreateReview_RestaurantReview_ShouldResolveCorrectReviewFactoryAndCreateReview()
+        public void CreateReview_RestaurantReview_ValidRequest_ShouldResolveCorrectReviewFactoryAndCreateReview()
         {
             // Arrange
             var mockKafkaProducer = new Mock<IKafkaProducer>();
-             
+
             var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
-            mockFactoryResolver 
+            mockFactoryResolver
                 .Setup(resolver => resolver("restaurant"))
                 .Returns(new RestaurantReviewFactory());
 
             var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object);
 
-            var orderId = Guid.NewGuid();
-            var username = "Test User";
-            var rating = 5;
-            var comment = "Great service!";
-            var entityId = Guid.NewGuid();
-            var entityName = "Test Restaurant";
             var type = "restaurant";
 
+            var request = new ReviewRequest()
+            {
+                ReviewType = type,
+                OrderId = Guid.NewGuid(),
+                CustomerUsername = "Test User",
+                StarRating = 5,
+                Comment = "Great service!",
+                IdOfRevewied = Guid.NewGuid(),
+                NameOfReviewed = "Test Restaurant",
+            };
+
             // Act
-            var review = reviewService.CreateReview(orderId, username, rating, comment, entityId, entityName, type);
+            var review = reviewService.CreateReview(request);
 
             // Assert
             mockFactoryResolver.Verify(resolver => resolver(type), Times.Once);
 
             var restaurantReview = review as RestaurantReview;
             Assert.NotNull(restaurantReview);
-            Assert.Equal(orderId, restaurantReview.OrderId);
-            Assert.Equal(username, restaurantReview.CustomerUsername);
-            Assert.Equal(rating, restaurantReview.StarRating);
-            Assert.Equal(comment, restaurantReview.Comment);
-            Assert.Equal(entityId, restaurantReview.RestaurantId);
-            Assert.Equal(entityName, restaurantReview.RestaurantName);
+            Assert.Equal(request.OrderId, restaurantReview.OrderId);
+            Assert.Equal(request.CustomerUsername, restaurantReview.CustomerUsername);
+            Assert.Equal(request.StarRating, restaurantReview.StarRating);
+            Assert.Equal(request.Comment, restaurantReview.Comment);
+            Assert.Equal(request.IdOfRevewied, restaurantReview.RestaurantId);
+            Assert.Equal(request.NameOfReviewed, restaurantReview.RestaurantName);
+        }
+
+        [Theory]
+        [InlineData(-10)]
+        [InlineData(-1)]
+        [InlineData(6)]
+        [InlineData(10)]
+        [InlineData(100)]
+        public void CreateReview_RestaurantReview_IvalidRequest_InvalidStars_ShouldResolveCorrectReviewFactoryAndThrowArgumentOutOfRangeException
+            (int starRating)
+        {
+            // Arrange
+            var mockKafkaProducer = new Mock<IKafkaProducer>();
+
+            var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
+            mockFactoryResolver
+                .Setup(resolver => resolver("restaurant"))
+                .Returns(new RestaurantReviewFactory());
+
+            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object);
+
+            var type = "restaurant";
+
+            var request = new ReviewRequest()
+            {
+                ReviewType = type,
+                OrderId = Guid.NewGuid(),
+                CustomerUsername = "Test User",
+                StarRating = starRating,
+                Comment = "Great service!",
+                IdOfRevewied = Guid.NewGuid(),
+                NameOfReviewed = "Test Restaurant",
+            };
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+                reviewService.CreateReview(request));
+            Assert.Equal("Star rating must be between 0 and 5", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(281)]
+        [InlineData(282)]
+        [InlineData(300)]
+        [InlineData(1000)]
+        public void CreateReview_RestaurantReview_IvalidRequest_InvalidComment_TooLong_ShouldResolveCorrectReviewFactoryAndThrowArgumentOutOfRangeException
+            (int commentLength)
+        {
+            // Arrange
+            var mockKafkaProducer = new Mock<IKafkaProducer>(); 
+
+            var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
+            mockFactoryResolver
+                .Setup(resolver => resolver("restaurant"))
+                .Returns(new RestaurantReviewFactory());
+
+            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object);
+
+            var type = "restaurant";
+
+            var request = new ReviewRequest()
+            {
+                ReviewType = type,
+                OrderId = Guid.NewGuid(),
+                CustomerUsername = "Test User",
+                StarRating = 1,
+                Comment = new string('a', commentLength),
+                IdOfRevewied = Guid.NewGuid(),
+                NameOfReviewed = "Test Restaurant",
+            };
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => 
+                reviewService.CreateReview(request));
+            Assert.Equal("Review cannot be more than 280 characters", exception.ParamName);
+        }
+
+        [Fact]
+        public void CreateReview_RestaurantReview_IvalidRequest_NullComment_ShouldResolveCorrectReviewFactoryAndThrowArgumentNullException()
+        {
+            // Arrange
+            var mockKafkaProducer = new Mock<IKafkaProducer>();
+
+            var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
+            mockFactoryResolver
+                .Setup(resolver => resolver("restaurant"))
+                .Returns(new RestaurantReviewFactory());
+
+            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object);
+
+            var type = "restaurant";
+
+            var request = new ReviewRequest()
+            {
+                ReviewType = type,
+                OrderId = Guid.NewGuid(),
+                CustomerUsername = "Test User",
+                StarRating = 1,
+                Comment = null,
+                IdOfRevewied = Guid.NewGuid(),
+                NameOfReviewed = "Test Restaurant",
+            };
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                reviewService.CreateReview(request));
+            Assert.Equal("Must add a review comment", exception.ParamName);
         }
 
         [Fact]
@@ -59,28 +172,33 @@ namespace API.Test
 
             var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object);
 
-            var orderId = Guid.NewGuid();
-            var username = "Test User";
-            var rating = 1;
-            var comment = "Great service!";
-            var entityId = Guid.NewGuid();
-            var entityName = "Test Deliver Agent";
             var type = "deliveryAgent";
 
+            var request = new ReviewRequest()
+            {
+                ReviewType = type,
+                OrderId = Guid.NewGuid(),
+                CustomerUsername = "Test User",
+                StarRating = 5,
+                Comment = "Great service!",
+                IdOfRevewied = Guid.NewGuid(),
+                NameOfReviewed = "Test Deliver Agent"
+            };
+
             // Act
-            var review = reviewService.CreateReview(orderId, username, rating, comment, entityId, entityName, type);
+            var review = reviewService.CreateReview(request);
 
             // Assert
             mockFactoryResolver.Verify(resolver => resolver(type), Times.Once);
 
             var agentReview = review as DeliveryAgentReview;
             Assert.NotNull(agentReview);
-            Assert.Equal(orderId, agentReview.OrderId);
-            Assert.Equal(username, agentReview.CustomerUsername);
-            Assert.Equal(rating, agentReview.StarRating);
-            Assert.Equal(comment, agentReview.Comment);
-            Assert.Equal(entityId, agentReview.DeliveryAgentId);
-            Assert.Equal(entityName, agentReview.DeliveryAgentName);
+            Assert.Equal(request.OrderId, agentReview.OrderId);
+            Assert.Equal(request.CustomerUsername, agentReview.CustomerUsername);
+            Assert.Equal(request.StarRating, agentReview.StarRating);
+            Assert.Equal(request.Comment, agentReview.Comment);
+            Assert.Equal(request.IdOfRevewied, agentReview.DeliveryAgentId);
+            Assert.Equal(request.NameOfReviewed, agentReview.DeliveryAgentName);
         }
 
         [Fact]
@@ -96,17 +214,22 @@ namespace API.Test
 
             var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object);
 
-            var orderId = Guid.NewGuid();
-            var username = string.Empty;
-            var rating = 1;
-            var comment = string.Empty;
-            var entityId = Guid.NewGuid();
-            var entityName = string.Empty;
             var type = "notValid";
 
+            var request = new ReviewRequest()
+            {
+                ReviewType = type,
+                OrderId = Guid.NewGuid(),
+                CustomerUsername = string.Empty,
+                StarRating = 1,
+                Comment = string.Empty,
+                IdOfRevewied = Guid.NewGuid(),
+                NameOfReviewed = string.Empty,
+            };
+
             // Act & Assert
-            var exception = Assert.Throws<InvalidReviewTypeException>(() => 
-                reviewService.CreateReview(orderId, username, rating, comment, entityId, entityName, type)
+            var exception = Assert.Throws<InvalidReviewTypeException>(() =>
+                reviewService.CreateReview(request)
                 );
             Assert.Equal($"Invalid review type: {type}", exception.Message);
 
@@ -114,7 +237,7 @@ namespace API.Test
         }
 
         [Fact]
-        public void CreateReview_NullReviewType_ShouldThrowInvalidReviewTypeException()
+        public void CreateReview_NullReviewType_ShouldThrowArgumentNullException()
         {
             // Arrange
             var mockKafkaProducer = new Mock<IKafkaProducer>();
@@ -122,22 +245,25 @@ namespace API.Test
             var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
             mockFactoryResolver
                 .Setup(resolver => resolver(null))
-                .Throws (new ArgumentNullException());
+                .Throws(new ArgumentNullException());
 
             var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object);
 
-            var orderId = Guid.NewGuid();
-            var username = string.Empty;
-            var rating = 1;
-            var comment = string.Empty;
-            var entityId = Guid.NewGuid();
-            var entityName = string.Empty;
+            var request = new ReviewRequest()
+            {
+                ReviewType = null,
+                OrderId = Guid.NewGuid(),
+                CustomerUsername = string.Empty,
+                StarRating = 1,
+                Comment = string.Empty,
+                IdOfRevewied = Guid.NewGuid(),
+                NameOfReviewed = string.Empty,
+            };
 
             // Act & Assert
-            var exception = Assert.Throws<InvalidReviewTypeException>(() =>
-                reviewService.CreateReview(orderId, username, rating, comment, entityId, entityName, null)
+            Assert.Throws<ArgumentNullException>(() =>
+                reviewService.CreateReview(request)
                 );
-            Assert.Equal("Invalid review type: ", exception.Message);
 
             mockFactoryResolver.Verify(resolver => resolver(null), Times.Once);
         }

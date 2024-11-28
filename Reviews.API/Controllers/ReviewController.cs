@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Reviews.API.DTOs;
 using Reviews.API.Services;
+using Reviews.Domain.Entities;
 
 namespace Reviews.API.Controllers
 {
@@ -33,6 +35,13 @@ namespace Reviews.API.Controllers
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+
+        [HttpPost]
+        public IActionResult CreateReview(ReviewRequest request) 
+        {
+            _reviewService.CreateReview(request); // TODO: Try catch a lot: InvalidReviewType + ArgumentNull + ArgumentOutOfRange: BadRequest
+            return Ok();
         }
 
     }
