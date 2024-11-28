@@ -5,23 +5,25 @@ using Reviews.Infrastructure.Kafka;
 using Moq;
 using Reviews.Domain.Exceptions;
 using Reviews.API.DTOs;
+using Reviews.Infrastructure.Repositories;
 
 namespace API.Test
 {
     public class ReviewServiceTest
     {
         [Fact]
-        public void CreateReview_RestaurantReview_ValidRequest_ShouldResolveCorrectReviewFactoryAndCreateReview()
+        public async void CreateReview_RestaurantReview_ValidRequest_ShouldResolveCorrectReviewFactoryAndCreateReview()
         {
             // Arrange
             var mockKafkaProducer = new Mock<IKafkaProducer>();
+            var mockRepo = new Mock<IReviewRepository>();
 
             var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
             mockFactoryResolver
                 .Setup(resolver => resolver("restaurant"))
                 .Returns(new RestaurantReviewFactory());
 
-            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object);
+            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object, mockRepo.Object);
 
             var type = "restaurant";
 
@@ -37,7 +39,7 @@ namespace API.Test
             };
 
             // Act
-            var review = reviewService.CreateReview(request);
+            var review = await reviewService.CreateReviewAsync(request);
 
             // Assert
             mockFactoryResolver.Verify(resolver => resolver(type), Times.Once);
@@ -58,18 +60,19 @@ namespace API.Test
         [InlineData(6)]
         [InlineData(10)]
         [InlineData(100)]
-        public void CreateReview_RestaurantReview_IvalidRequest_InvalidStars_ShouldResolveCorrectReviewFactoryAndThrowArgumentOutOfRangeException
+        public async void CreateReview_RestaurantReview_IvalidRequest_InvalidStars_ShouldResolveCorrectReviewFactoryAndThrowArgumentOutOfRangeException
             (int starRating)
         {
             // Arrange
             var mockKafkaProducer = new Mock<IKafkaProducer>();
+            var mockRepo = new Mock<IReviewRepository>();
 
             var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
             mockFactoryResolver
                 .Setup(resolver => resolver("restaurant"))
                 .Returns(new RestaurantReviewFactory());
 
-            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object);
+            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object, mockRepo.Object);
 
             var type = "restaurant";
 
@@ -85,8 +88,8 @@ namespace API.Test
             };
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
-                reviewService.CreateReview(request));
+            var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+                reviewService.CreateReviewAsync(request));
             Assert.Equal("Star rating must be between 0 and 5", exception.ParamName);
         }
 
@@ -95,18 +98,19 @@ namespace API.Test
         [InlineData(282)]
         [InlineData(300)]
         [InlineData(1000)]
-        public void CreateReview_RestaurantReview_IvalidRequest_InvalidComment_TooLong_ShouldResolveCorrectReviewFactoryAndThrowArgumentOutOfRangeException
+        public async void CreateReview_RestaurantReview_IvalidRequest_InvalidComment_TooLong_ShouldResolveCorrectReviewFactoryAndThrowArgumentOutOfRangeException
             (int commentLength)
         {
             // Arrange
-            var mockKafkaProducer = new Mock<IKafkaProducer>(); 
+            var mockKafkaProducer = new Mock<IKafkaProducer>();
+            var mockRepo = new Mock<IReviewRepository>();
 
             var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
             mockFactoryResolver
                 .Setup(resolver => resolver("restaurant"))
                 .Returns(new RestaurantReviewFactory());
 
-            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object);
+            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object, mockRepo.Object);
 
             var type = "restaurant";
 
@@ -122,23 +126,24 @@ namespace API.Test
             };
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => 
-                reviewService.CreateReview(request));
+            var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => 
+                reviewService.CreateReviewAsync(request));
             Assert.Equal("Review cannot be more than 280 characters", exception.ParamName);
         }
 
         [Fact]
-        public void CreateReview_RestaurantReview_IvalidRequest_NullComment_ShouldResolveCorrectReviewFactoryAndThrowArgumentNullException()
+        public async void CreateReview_RestaurantReview_IvalidRequest_NullComment_ShouldResolveCorrectReviewFactoryAndThrowArgumentNullException()
         {
             // Arrange
             var mockKafkaProducer = new Mock<IKafkaProducer>();
+            var mockRepo = new Mock<IReviewRepository>();
 
             var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
             mockFactoryResolver
                 .Setup(resolver => resolver("restaurant"))
                 .Returns(new RestaurantReviewFactory());
 
-            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object);
+            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object, mockRepo.Object);
 
             var type = "restaurant";
 
@@ -154,23 +159,24 @@ namespace API.Test
             };
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentNullException>(() =>
-                reviewService.CreateReview(request));
+            var exception = await Assert.ThrowsAsync<ArgumentNullException>(() =>
+                reviewService.CreateReviewAsync(request));
             Assert.Equal("Must add a review comment", exception.ParamName);
         }
 
         [Fact]
-        public void CreateReview_DeliveryAgentReview_ShouldResolveCorrectReviewFactoryAndCreateReview()
+        public async void CreateReview_DeliveryAgentReview_ShouldResolveCorrectReviewFactoryAndCreateReview()
         {
             // Arrange
             var mockKafkaProducer = new Mock<IKafkaProducer>();
+            var mockRepo = new Mock<IReviewRepository>();
 
             var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
             mockFactoryResolver
                 .Setup(resolver => resolver("deliveryAgent"))
                 .Returns(new DeliveryAgentReviewFactory());
 
-            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object);
+            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object, mockRepo.Object);
 
             var type = "deliveryAgent";
 
@@ -186,7 +192,7 @@ namespace API.Test
             };
 
             // Act
-            var review = reviewService.CreateReview(request);
+            var review = await reviewService.CreateReviewAsync(request);
 
             // Assert
             mockFactoryResolver.Verify(resolver => resolver(type), Times.Once);
@@ -202,17 +208,18 @@ namespace API.Test
         }
 
         [Fact]
-        public void CreateReview_InvalidReviewType_ShouldThrowInvalidReviewTypeException()
+        public async void CreateReview_InvalidReviewType_ShouldThrowInvalidReviewTypeException()
         {
             // Arrange
             var mockKafkaProducer = new Mock<IKafkaProducer>();
+            var mockRepo = new Mock<IReviewRepository>();
 
             var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
             mockFactoryResolver
                 .Setup(resolver => resolver("notValid"))
                 .Throws(new KeyNotFoundException());
 
-            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object);
+            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object, mockRepo.Object);
 
             var type = "notValid";
 
@@ -228,8 +235,8 @@ namespace API.Test
             };
 
             // Act & Assert
-            var exception = Assert.Throws<InvalidReviewTypeException>(() =>
-                reviewService.CreateReview(request)
+            var exception = await Assert.ThrowsAsync<InvalidReviewTypeException>(() =>
+                reviewService.CreateReviewAsync(request)
                 );
             Assert.Equal($"Invalid review type: {type}", exception.Message);
 
@@ -237,17 +244,18 @@ namespace API.Test
         }
 
         [Fact]
-        public void CreateReview_NullReviewType_ShouldThrowArgumentNullException()
+        public async void CreateReview_NullReviewType_ShouldThrowArgumentNullException()
         {
             // Arrange
             var mockKafkaProducer = new Mock<IKafkaProducer>();
+            var mockRepo = new Mock<IReviewRepository>();
 
             var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
             mockFactoryResolver
                 .Setup(resolver => resolver(null))
                 .Throws(new ArgumentNullException());
 
-            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object);
+            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object, mockRepo.Object);
 
             var request = new ReviewRequest()
             {
@@ -261,8 +269,8 @@ namespace API.Test
             };
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() =>
-                reviewService.CreateReview(request)
+            await Assert.ThrowsAsync<ArgumentNullException>(() =>
+                reviewService.CreateReviewAsync(request)
                 );
 
             mockFactoryResolver.Verify(resolver => resolver(null), Times.Once);

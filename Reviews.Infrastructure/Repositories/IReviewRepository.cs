@@ -1,9 +1,9 @@
-﻿using Reviews.Domain.Entities;
+﻿using Reviews.Infrastructure.Models;
 
 namespace Reviews.Infrastructure.Repositories
 {
     public interface IReviewRepository
     {
-        Task CreateReviewAsync(Review review);
+        Task CreateReviewAsync(ReviewDTO review);
     }
 }

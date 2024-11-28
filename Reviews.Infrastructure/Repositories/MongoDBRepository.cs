@@ -4,13 +4,13 @@ using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Reviews.Domain.Entities;
+using Reviews.Infrastructure.Models;
 
 namespace Reviews.Infrastructure.Repositories
 {
     public class MongoDBRepository : IReviewRepository
     {
-        private readonly IMongoCollection<Review> _collection;
+        private readonly IMongoCollection<ReviewDTO> _collection;
         private readonly ILogger<MongoDBRepository> _logger;
 
         private static bool _guidSerializerRegistered = false;
@@ -32,16 +32,25 @@ namespace Reviews.Infrastructure.Repositories
             var mongoDatabase = mongoClient.GetDatabase(
                 mongoConnection.Value.DatabaseName);
 
-            _collection = mongoDatabase.GetCollection<Review>(
+            _collection = mongoDatabase.GetCollection<ReviewDTO>(
                 mongoConnection.Value.CollectionName);
 
             _logger.LogInformation("Successfully connected to MongoDB: Database: {DatabaseName}, Collection: {CollectionName}",
                     mongoConnection.Value.DatabaseName, mongoConnection.Value.CollectionName);
         }
 
-        public Task CreateReviewAsync(Review review)
+        public async Task CreateReviewAsync(ReviewDTO review)
         {
-            throw new NotImplementedException();
+            try
+            {
+                await _collection.InsertOneAsync(review);
+                _logger.LogInformation("Successfully inserted {ReviewType} review for order with id: {OrderId}", review.ReviewType, review.OrderId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error inserting {ReviewType} review for order with id: {OrderId}", review.ReviewType, review.OrderId);
+                throw;
+            }
         }
     }
 }

@@ -38,10 +38,10 @@ namespace Reviews.API.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateReview(ReviewRequest request) 
+        public async Task<ActionResult<Review>> CreateReview(ReviewRequest request) 
         {
-            _reviewService.CreateReview(request); // TODO: Try catch a lot: InvalidReviewType + ArgumentNull + ArgumentOutOfRange: BadRequest
-            return Ok();
+            var review = await _reviewService.CreateReviewAsync(request); // TODO: Try catch a lot: InvalidReviewType + ArgumentNull + ArgumentOutOfRange: BadRequest
+            return Ok(review);
         }
 
     }
