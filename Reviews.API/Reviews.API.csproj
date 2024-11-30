@@ -14,7 +14,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Reviews.Domain\Reviews.Domain.csproj" />
     <ProjectReference Include="..\Reviews.Infrastructure\Reviews.Infrastructure.csproj" />
-    <ProjectReference Include="..\Reviews.UnitTests\Reviews.UnitTests.csproj" />
   </ItemGroup>
 
 </Project>

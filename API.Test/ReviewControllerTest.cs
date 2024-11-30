@@ -5,44 +5,56 @@ using Reviews.API.Controllers;
 using Reviews.API.DTOs;
 using Reviews.API.Services;
 using Reviews.Domain.Entities;
-using Reviews.Domain.Exceptions;
 using Reviews.Domain.Entities.Factories;
 using Reviews.Infrastructure.Kafka;
 using Reviews.Infrastructure.Repositories;
 
-namespace API.Tests
+namespace API.Test
 {
-    public class ReviewControllerTests
+    public class ReviewControllerTest
     {
+        private readonly Mock<IKafkaProducer> _mockKafkaProducer;
+        private readonly Mock<IReviewRepository> _mockRepo;
+        private readonly Mock<Func<string, IReviewFactory>> _mockFactoryResolver;
+        private readonly Mock<ILogger<ReviewController>> _mockLogger;
+
+        private readonly ReviewService _reviewService;
+        private readonly ReviewController _controller;
+
+        public ReviewControllerTest()
+        {
+            _mockKafkaProducer = new Mock<IKafkaProducer>();
+            _mockRepo = new Mock<IReviewRepository>();
+            _mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
+            _mockLogger = new Mock<ILogger<ReviewController>>();
+
+            _reviewService = new ReviewService(_mockKafkaProducer.Object, _mockFactoryResolver.Object, _mockRepo.Object);
+            _controller = new ReviewController(_mockLogger.Object, _reviewService);
+        }
+
         [Fact]
         public async Task CreateReview_RestaurantReview_ShouldReturnOkResult()
         {
             // Arrange
-            var mockKafkaProducer = new Mock<IKafkaProducer>();
-            var mockRepo = new Mock<IReviewRepository>();
+            var type = "restaurant";
 
-            var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
-            mockFactoryResolver
-                .Setup(resolver => resolver("restaurant"))
+            _mockFactoryResolver
+                .Setup(resolver => resolver(type))
                 .Returns(new RestaurantReviewFactory());
 
-            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object, mockRepo.Object);
-            var mockLogger = new Mock<ILogger<ReviewController>>();
-            var controller = new ReviewController(mockLogger.Object, reviewService);
-
             var reviewRequest = new ReviewRequest
-            { 
+            {
                 OrderId = Guid.NewGuid(),
                 CustomerUsername = "Test User",
                 StarRating = 5,
                 Comment = "Great service!",
-                ReviewType = "restaurant",
+                ReviewType = type,
                 IdOfRevewied = Guid.NewGuid(),
                 NameOfReviewed = "Test Restaurant"
             };
 
             // Act
-            var result = await controller.CreateReview(reviewRequest);
+            var result = await _controller.CreateReview(reviewRequest);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -59,17 +71,11 @@ namespace API.Tests
         public async Task CreateReview_DeliveryAgentReview_ShouldReturnOkResult()
         {
             // Arrange
-            var mockKafkaProducer = new Mock<IKafkaProducer>();
-            var mockRepo = new Mock<IReviewRepository>();
+            var type = "deliveryAgent";
 
-            var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
-            mockFactoryResolver
-                .Setup(resolver => resolver("deliveryAgent"))
+            _mockFactoryResolver
+                .Setup(resolver => resolver(type))
                 .Returns(new DeliveryAgentReviewFactory());
-
-            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object, mockRepo.Object);
-            var mockLogger = new Mock<ILogger<ReviewController>>();
-            var controller = new ReviewController(mockLogger.Object, reviewService);
 
             var reviewRequest = new ReviewRequest
             {
@@ -77,13 +83,13 @@ namespace API.Tests
                 CustomerUsername = "Test User",
                 StarRating = 5,
                 Comment = "Great service!",
-                ReviewType = "deliveryAgent",
+                ReviewType = type,
                 IdOfRevewied = Guid.NewGuid(),
                 NameOfReviewed = "Test Delivery Agent"
             };
 
             // Act
-            var result = await controller.CreateReview(reviewRequest);
+            var result = await _controller.CreateReview(reviewRequest);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -100,31 +106,25 @@ namespace API.Tests
         public async Task CreateReview_RestaurantReview_ArgumentNullException_ShouldReturnBadRequest()
         {
             // Arrange
-            var mockKafkaProducer = new Mock<IKafkaProducer>();
-            var mockRepo = new Mock<IReviewRepository>();
+            var type = "restaurant";
 
-            var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
-            mockFactoryResolver
-                .Setup(resolver => resolver("restaurant"))
+            _mockFactoryResolver
+                .Setup(resolver => resolver(type))
                 .Returns(new RestaurantReviewFactory());
-
-            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object, mockRepo.Object);
-            var mockLogger = new Mock<ILogger<ReviewController>>();
-            var controller = new ReviewController(mockLogger.Object, reviewService);
 
             var reviewRequest = new ReviewRequest
             {
                 OrderId = Guid.NewGuid(),
-                CustomerUsername = null,  
+                CustomerUsername = null,
                 StarRating = 5,
                 Comment = string.Empty,
-                ReviewType = "restaurant",
+                ReviewType = type,
                 IdOfRevewied = Guid.NewGuid(),
                 NameOfReviewed = string.Empty
             };
 
             // Act
-            var result = await controller.CreateReview(reviewRequest);
+            var result = await _controller.CreateReview(reviewRequest);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
@@ -140,31 +140,25 @@ namespace API.Tests
         public async Task CreateReview_RestaurantReview_ArgumentOutOfRangeException_ShouldReturnBadRequest(int starRating)
         {
             // Arrange
-            var mockKafkaProducer = new Mock<IKafkaProducer>();
-            var mockRepo = new Mock<IReviewRepository>();
+            var type = "restaurant";
 
-            var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
-            mockFactoryResolver
-                .Setup(resolver => resolver("restaurant"))
+            _mockFactoryResolver
+                .Setup(resolver => resolver(type))
                 .Returns(new RestaurantReviewFactory());
-
-            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object, mockRepo.Object);
-            var mockLogger = new Mock<ILogger<ReviewController>>();
-            var controller = new ReviewController(mockLogger.Object, reviewService);
 
             var reviewRequest = new ReviewRequest
             {
                 OrderId = Guid.NewGuid(),
                 CustomerUsername = "Test User",
-                StarRating = starRating,  
+                StarRating = starRating,
                 Comment = "Great service!",
-                ReviewType = "restaurant",
+                ReviewType = type,
                 IdOfRevewied = Guid.NewGuid(),
                 NameOfReviewed = "Test Restaurant"
             };
 
             // Act
-            var result = await controller.CreateReview(reviewRequest);
+            var result = await _controller.CreateReview(reviewRequest);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
@@ -175,17 +169,7 @@ namespace API.Tests
         public async Task CreateReview_RestaurantReview_InvalidReviewType_ShouldReturnBadRequest()
         {
             // Arrange
-            var mockKafkaProducer = new Mock<IKafkaProducer>();
-            var mockRepo = new Mock<IReviewRepository>();
-
-            var mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
-            mockFactoryResolver
-                .Setup(resolver => resolver("restaurant"))
-                .Returns(new RestaurantReviewFactory());
-
-            var reviewService = new ReviewService(mockKafkaProducer.Object, mockFactoryResolver.Object, mockRepo.Object);
-            var mockLogger = new Mock<ILogger<ReviewController>>();
-            var controller = new ReviewController(mockLogger.Object, reviewService);
+            var type = "invalid"; //Invalid type
 
             var reviewRequest = new ReviewRequest
             {
@@ -193,13 +177,13 @@ namespace API.Tests
                 CustomerUsername = "testuser",
                 StarRating = 4,
                 Comment = "Excellent service!",
-                ReviewType = "invalid",  // Invalid type
+                ReviewType = type,
                 IdOfRevewied = Guid.NewGuid(),
                 NameOfReviewed = "Test Restaurant"
             };
 
             // Act
-            var result = await controller.CreateReview(reviewRequest);
+            var result = await _controller.CreateReview(reviewRequest);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
@@ -210,7 +194,7 @@ namespace API.Tests
         public async Task CreateReview_RestaurantReview_UnhandledException_ShouldReturnInternalServerError()
         {
             // Arrange
-            var mockReviewService = new Mock<IReviewService>();
+            var mockReviewService = new Mock<IReviewService>(); //With mock service here to create another unexpected exception
             var mockLogger = new Mock<ILogger<ReviewController>>();
             var controller = new ReviewController(mockLogger.Object, mockReviewService.Object);
 
