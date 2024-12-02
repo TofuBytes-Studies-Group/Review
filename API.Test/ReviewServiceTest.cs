@@ -1,7 +1,6 @@
 using Reviews.API.Services;
 using Reviews.Domain.Entities.Factories;
 using Reviews.Domain.Entities;
-using Reviews.Infrastructure.Kafka;
 using Moq;
 using Reviews.Domain.Exceptions;
 using Reviews.API.DTOs;
@@ -11,17 +10,15 @@ namespace API.Test
 {
     public class ReviewServiceTest
     {
-        private readonly Mock<IKafkaProducer> _mockKafkaProducer;
         private readonly Mock<IReviewRepository> _mockRepo;
         private readonly Mock<Func<string, IReviewFactory>> _mockFactoryResolver;
         private readonly ReviewService _reviewService;
 
         public ReviewServiceTest()
         {
-            _mockKafkaProducer = new Mock<IKafkaProducer>();
             _mockRepo = new Mock<IReviewRepository>();
             _mockFactoryResolver = new Mock<Func<string, IReviewFactory>>();
-            _reviewService = new ReviewService(_mockKafkaProducer.Object, _mockFactoryResolver.Object, _mockRepo.Object);
+            _reviewService = new ReviewService(_mockFactoryResolver.Object, _mockRepo.Object);
         }
 
         [Fact]
