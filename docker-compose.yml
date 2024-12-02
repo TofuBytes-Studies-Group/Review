@@ -2,17 +2,17 @@ version: '3.9'
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:6.1.1
-    container_name: zookeeper1
+    container_name: review-zookeeper
     ports:
       - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
     networks:
-      - kafka-network
+      - review-kafka-network
 
   kafka:
     image: confluentinc/cp-kafka:6.1.1
-    container_name: kafka1
+    container_name: review-kafka
     depends_on:
       - zookeeper
     ports:
@@ -23,8 +23,51 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
-      - kafka-network
+      - review-kafka-network
+
+  mongodb:
+    image: mongo:latest
+    container_name: review-mongodb
+    hostname: mongodb
+    volumes:
+      - mongodb-data:/data/db/
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+    ports:
+      - "27017:27017"
+    networks:
+      - review-mongodb-network
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: review-mongo-express
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGODB_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGODB_PASSWORD}
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_SERVER: 'mongodb'
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USERNAME}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
+    ports:
+      - 8081:8081
+    networks:
+      - review-mongodb-network
+    depends_on:
+      - mongodb
+
+volumes:
+  mongodb-data:
+    driver: local
+    name: review-mongo-data
 
 networks:
-  kafka-network:
+  review-kafka-network:
     driver: bridge
+  review-mongodb-network:
+    driver: bridge
+    name: review-mongo-network
+  
