@@ -5,6 +5,7 @@ using MongoDB.Bson.Serialization;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Reviews.Infrastructure.Models;
+using Reviews.Domain.Exceptions;
 
 namespace Reviews.Infrastructure.Repositories
 {
@@ -51,6 +52,16 @@ namespace Reviews.Infrastructure.Repositories
                 _logger.LogError(ex, "Error inserting {ReviewType} review for order with id: {OrderId}", review.ReviewType, review.OrderId);
                 throw;
             }
+        }
+
+        public async Task<ReviewDTO> GetReviewAsync(Guid orderId, String reviewType)
+        {
+            var result = await _collection.Find(o => o.OrderId == orderId && o.ReviewType == reviewType).FirstOrDefaultAsync();
+            if (result == null)
+            {
+                throw new ReviewNotFoundException($"Review of type {reviewType} with OrderId {orderId} not found in database.");
+            }
+            return result;
         }
     }
 }
