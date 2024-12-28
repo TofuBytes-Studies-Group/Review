@@ -1,34 +1,31 @@
 # Stage 1: Build the application
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /source
+WORKDIR /app
 
 # Copy solution and projects files
-COPY *.sln .
-COPY Reviews.API/Reviews.API.csproj ./Reviews.API/
-COPY Reviews.Domain/Reviews.Domain.csproj ./Reviews.Domain/
-COPY Reviews.Infrastructure/Reviews.Infrastructure.csproj ./Reviews.Infrastructure/
-COPY Reviews.UnitTests/Domain.UnitTests.csproj ./Reviews.UnitTests/
-COPY API.Test/API.Test.csproj ./API.Test/
+COPY *.sln ./
+
+COPY Reviews.API/Reviews.API.csproj Reviews.API/
+COPY Reviews.Domain/Reviews.Domain.csproj Reviews.Domain/
+COPY Reviews.Infrastructure/Reviews.Infrastructure.csproj Reviews.Infrastructure/
+COPY Reviews.UnitTests/Domain.UnitTests.csproj Reviews.UnitTests/
+COPY API.Test/API.Test.csproj API.Test/
+COPY Infrastructure.Tests/Infrastructure.Tests.csproj Infrastructure.Tests/
 
 # Restore dependencies
-RUN dotnet restore
+RUN dotnet restore 
 
-# Copy the rest of the application files
-COPY Reviews.API/. ./Reviews.API/
-COPY Reviews.Domain/. ./Reviews.Domain/
-COPY Reviews.Infrastructure/. ./Reviews.Infrastructure/
-COPY Reviews.UnitTests/. ./Reviews.UnitTests/
+# Copy the remaining files and build the application
+COPY . ./
+RUN dotnet publish Reviews.API/Reviews.API.csproj -c Release -o /app/out
 
-# Build and publish the API project
-WORKDIR /source/Reviews.API
-RUN dotnet publish -c Release -o /app --no-restore
-
-# Stage 2: Create the runtime image
+# Use the official .NET runtime image to run the application
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
-# Copy the build output from the first stage
-COPY --from=build /app ./
+COPY --from=build /app/out .
+
+EXPOSE 80
 
 # Set the entry point for the container
 ENTRYPOINT ["dotnet", "Reviews.API.dll"]
