@@ -23,6 +23,15 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    services:
+      mongo:
+        image: mongo:latest
+        ports:
+          - 27017:27017  
+        env:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: password
+          
     steps:
       - name: Check out the code
         uses: actions/checkout@v4
