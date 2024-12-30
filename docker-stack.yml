@@ -1,0 +1,224 @@
+version: "3.9"
+services:
+  # Kafka and Zookeeper (shared)
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.1.1
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - kafka-network
+
+  kafka:
+    image: confluentinc/cp-kafka:6.1.1
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT
+      KAFKA_LISTENER_PORTS: 9092
+      KAFKA_LISTENER_NAMES: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - kafka-network
+    depends_on:
+      - zookeeper
+
+  # Redis for Cart
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - kafka-network
+
+  # Cart service
+  cart_api:
+    image: praisethemachinegod/cartservice:latest
+    deploy:
+      replicas: 2
+    ports:
+      - "5000:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    networks:
+      - kafka-network
+
+  # MongoDB for Reviews
+  reviews_mongodb:
+    image: mongo:latest
+    volumes:
+      - reviews-mongodb-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+    ports:
+      - "27018:27017"
+    networks:
+      - kafka-network
+
+  # Reviews service
+  reviews_api:
+    image: praisethemachinegod/reviewservice:latest
+    deploy:
+      replicas: 2
+    ports:
+      - "5001:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    networks:
+      - kafka-network
+    depends_on:
+      - kafka
+      - reviews_mongodb
+
+  # MongoDB for Order Status
+  orderstatus_mongodb:
+    image: mongo:latest
+    volumes:
+      - orderstatus-mongodb-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+    ports:
+      - "27019:27017"
+    networks:
+      - kafka-network
+
+  # Order Status Service
+  orderstatus_api:
+    image: praisethemachinegod/orderstatusservice:latest
+    deploy:
+      replicas: 2
+    ports:
+      - "5002:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    networks:
+      - kafka-network
+    depends_on:
+      - kafka
+      - orderstatus_mongodb
+
+  # PostgreSQL for Catalog
+  catalog_postgres:
+    image: postgres:16.1
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./Database/catalog-script.sql:/docker-entrypoint-initdb.d/catalog-script.sql
+    networks:
+      kafka-network:
+        aliases:
+          - postgres
+  
+  # Catalog Service
+  catalog_api:
+    image: praisethemachinegod/catalogservice:latest
+    deploy:
+      replicas: 2
+    ports:
+      - "5003:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    networks:
+      - kafka-network
+    depends_on:
+      - kafka
+      - catalog_postgres
+
+  # PostgreSQL for Ordering
+  ordering_postgres:
+    image: postgres:16.1
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./Database/ordering-script.sql:/docker-entrypoint-initdb.d/ordering-script.sql
+    networks:
+      - kafka-network
+
+  # Ordering Service
+  ordering_api:
+    image: praisethemachinegod/orderingservice:latest
+    deploy:
+      replicas: 2
+    ports:
+      - "5004:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    networks:
+      - kafka-network
+    depends_on:
+      - kafka
+      - ordering_postgres
+
+  # Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--web.enable-lifecycle"
+    networks:
+      - monitoring
+      - kafka-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - monitoring
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    ports:
+      - "8080:8080" 
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /sys:/sys
+      - /var/lib/docker/:/var/lib/docker/
+    networks:
+      - monitoring
+    deploy:
+      mode: global
+
+networks:
+  kafka-network:
+    driver: overlay
+  monitoring:
+    driver: overlay
+
+volumes:
+  reviews-mongodb-data:
+    driver: local
+  orderstatus-mongodb-data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana-data:
+    driver: local
